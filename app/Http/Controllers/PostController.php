@@ -12,8 +12,14 @@ class PostController extends Controller
      */
     public function index()
     {
-        //
+        $posts = Post::with('user', 'likes', 'comments')->latest()->get();
+
+        return response()->json([
+            'message' => 'List of posts',
+            'posts' => $posts
+        ], 200);
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -50,10 +56,16 @@ class PostController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        //
+        $post = Post::with('user', 'likes', 'comments')->findOrFail($id);
+
+        return response()->json([
+            'message' => 'Post details',
+            'post' => $post
+        ], 200);
     }
+
 
     /**
      * Show the form for editing the specified resource.

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Like;
+use App\Models\Post;
 
 class LikeController extends Controller
 {
@@ -25,9 +27,33 @@ class LikeController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store($postId)
     {
-        //
+        if (!Post::where('id', $postId)->exists()) {
+            return response()->json(['message' => 'Post not found'], 404);
+        }
+
+        $userId = auth()->id();
+
+        $likeExists = Like::where('user_id', $userId)
+                          ->where('post_id', $postId)
+                          ->exists();
+
+        if ($likeExists) {
+            return response()->json(['message' => 'You already liked this post.'], 400);
+        }
+
+        Like::create([
+            'user_id' => $userId,
+            'post_id' => $postId,
+        ]);
+
+        $likeCount = Like::where('post_id', $postId)->count();
+
+        return response()->json([
+            'message' => 'Post liked successfully',
+            'like_count' => $likeCount,
+        ], 201);
     }
 
     /**
@@ -51,14 +77,25 @@ class LikeController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy($postId)
     {
-        //
+        $like = Like::where('user_id', auth()->id())
+                    ->where('post_id', $postId)
+                    ->first();
+
+        if (!$like) {
+            return response()->json(['message' => 'Like not found'], 404);
+        }
+
+        $like->delete();
+
+        return response()->json(['message' => 'Like removed successfully']);
     }
+
 }
