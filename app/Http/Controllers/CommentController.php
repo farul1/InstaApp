@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Comment;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CommentController extends Controller
 {
@@ -29,24 +30,35 @@ class CommentController extends Controller
      */
     public function store(Request $request, $postId)
     {
-        $request->validate([
-            'comment' => 'required|string|max:500',
+        // $request->validate([
+        //     'comment' => 'required|string|max:500',
+        // ]);
+
+        // $post = Post::findOrFail($postId);
+
+        // $comment = Comment::create([
+        //     'user_id' => auth()->id(),
+        //     'post_id' => $postId,
+        //     'comment' => $request->comment,
+        // ]);
+
+        // return response()->json([
+        //     'message' => 'Comment added successfully',
+        //     'comment' => $comment
+        // ]);
+        $validatedData = $request->validate([
+            'comment' => 'required|string|max:255',
         ]);
 
         $post = Post::findOrFail($postId);
 
-        $comment = Comment::create([
+        $post->comments()->create([
             'user_id' => auth()->id(),
-            'post_id' => $postId,
-            'comment' => $request->comment,
+            'comment' => $validatedData['comment'],
         ]);
 
-        return response()->json([
-            'message' => 'Comment added successfully',
-            'comment' => $comment
-        ]);
+        return redirect()->back()->with('success', 'Komentar berhasil ditambahkan.');
     }
-
     /**
      * Display the specified resource.
      */
@@ -77,12 +89,11 @@ class CommentController extends Controller
     public function destroy($commentId)
     {
         $comment = Comment::findOrFail($commentId);
-        if ($comment->user_id != auth()->id()) {
-            return response()->json(['message' => 'You can only delete your own comments.'], 403);
+        if (Auth::user()->id == $comment->user_id || Auth::user()->is_admin) {
+            $comment->delete();
+            return redirect()->back()->with('success', 'Komentar berhasil dihapus.');
         }
-
-        $comment->delete();
-
-        return response()->json(['message' => 'Comment deleted successfully']);
+        return redirect()->back()->with('error', 'Anda tidak memiliki izin untuk menghapus komentar ini.');
     }
+
 }

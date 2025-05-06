@@ -8,6 +8,10 @@ use App\Models\Post;
 
 class LikeController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
     /**
      * Display a listing of the resource.
      */
@@ -29,32 +33,54 @@ class LikeController extends Controller
      */
     public function store($postId)
     {
-        if (!Post::where('id', $postId)->exists()) {
-            return response()->json(['message' => 'Post not found'], 404);
+        // if (!Post::where('id', $postId)->exists()) {
+        //     return response()->json(['message' => 'Post not found'], 404);
+        // }
+
+        // $userId = auth()->id();
+
+        // $likeExists = Like::where('user_id', $userId)
+        //                   ->where('post_id', $postId)
+        //                   ->exists();
+
+        // if ($likeExists) {
+        //     return response()->json(['message' => 'You already liked this post.'], 400);
+        // }
+
+        // Like::create([
+        //     'user_id' => $userId,
+        //     'post_id' => $postId,
+        // ]);
+
+        // $likeCount = Like::where('post_id', $postId)->count();
+
+        // return response()->json([
+        //     'message' => 'Post liked successfully',
+        //     'like_count' => $likeCount,
+        // ], 201);
+
+        $post = Post::findOrFail($postId);
+        $user = auth()->user();
+
+        $existingLike = $post->likes()->where('user_id', $user->id)->first();
+
+        if ($existingLike) {
+            $existingLike->delete();
+            $likeCount = $post->likes()->count();
+            return redirect()->back()
+                ->with('success', 'Post unliked successfully.')
+                ->with('like_count', $likeCount);
         }
 
-        $userId = auth()->id();
+        $post->likes()->create(['user_id' => $user->id]);
 
-        $likeExists = Like::where('user_id', $userId)
-                          ->where('post_id', $postId)
-                          ->exists();
+        $likeCount = $post->likes()->count();
 
-        if ($likeExists) {
-            return response()->json(['message' => 'You already liked this post.'], 400);
+
+        return redirect()->back()
+            ->with('success', 'Post liked successfully.')
+            ->with('like_count', $likeCount);
         }
-
-        Like::create([
-            'user_id' => $userId,
-            'post_id' => $postId,
-        ]);
-
-        $likeCount = Like::where('post_id', $postId)->count();
-
-        return response()->json([
-            'message' => 'Post liked successfully',
-            'like_count' => $likeCount,
-        ], 201);
-    }
 
     /**
      * Display the specified resource.

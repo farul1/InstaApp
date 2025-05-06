@@ -23,7 +23,18 @@ class Post extends Model
 
     public function comments()
     {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(Comment::class)->latest();
     }
+
+    public function likedByAuth()
+    {
+        if (!auth()->check()) {
+            return false;
+        }
+
+        return $this->likes()->where('user_id', auth()->id())->exists();
+    }
+
+
 
 }

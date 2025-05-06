@@ -23,13 +23,14 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $token = $user->createToken('instaapp_token')->plainTextToken;
+        Auth::login($user);
 
-        return response()->json([
-            'message' => 'User registered successfully',
-            'user'    => $user,
-            'token'   => $token,
-        ], 201);
+        return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login dengan akun baru Anda.');
+    }
+
+    public function showRegisterForm()
+    {
+        return view('auth.register');
     }
     public function login(Request $request)
     {
@@ -38,29 +39,23 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $credentials = $request->only('email', 'password');
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'message' => 'Invalid credentials',
-            ], 401);
+        if (Auth::attempt($credentials)) {
+            return redirect()->route('home')->with('success', 'Login berhasil! Selamat datang kembali.');
         }
-
-        $token = $user->createToken('instaapp_token')->plainTextToken;
-
-        return response()->json([
-            'message' => 'Login successful',
-            'user'    => $user,
-            'token'   => $token,
-        ]);
+        return back()->withErrors(['email' => 'Email atau kata sandi salah.'])->withInput();
     }
+
+    public function showLoginForm()
+    {
+        return view('auth.login');
+    }
+
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        Auth::logout();
 
-        return response()->json([
-            'message' => 'Logged out successfully',
-        ]);
+        return redirect()->route('login')->with('success', 'Logout berhasil! Sampai jumpa lagi.');
     }
-
 }
