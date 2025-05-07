@@ -91,11 +91,6 @@ InstaApp adalah aplikasi web sederhana yang memungkinkan pengguna untuk berbagi 
 
 * Aplikasi ini adalah implementasi sederhana dan mungkin tidak mencakup semua fitur yang ada pada platform media sosial yang lebih kompleks.
 * Untuk pengembangan lebih lanjut, Anda dapat menambahkan fitur seperti following/followers, notifikasi, edit profil, dan lain-lain.
-
-## Kontribusi
-
-Jika Anda ingin berkontribusi pada proyek ini, silakan fork repository dan buat pull request dengan perubahan yang Anda ajukan.
-
----
-
-Semoga README ini membantu! Kalau ada bagian lain yang ingin ditambahkan atau diubah, beritahu saya ya! 😊
+------
+##
+Link Postman : https://documenter.getpostman.com/view/43024881/2sB2j7cUJu
